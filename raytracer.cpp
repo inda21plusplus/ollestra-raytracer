@@ -10,6 +10,7 @@
 #include "headers/HittableList.h"
 #include "headers/Sphere.h"
 #include "headers/Camera.h"
+#include "headers/Material.h"
 
 using namespace std;
 
@@ -51,8 +52,13 @@ Color ray_color(const Ray &r, const HittableList &world, int depth)
 
     if (world.hit(r, 0.002, infinity, rec))
     {
-        Point3 target = rec.p + rec.normal + ranomd_in_hemisphere(rec.normal);
-        return 0.5 * ray_color(Ray(rec.p, target - rec.p), world, depth - 1);
+        Ray scattered;
+        Color attenuation;
+
+        if (rec.mat_ptr->scatter(r, rec, attenuation, scattered))
+            return attenuation * ray_color(scattered, world, depth - 1);
+
+        return Color(0, 0, 0);
     }
     Vec3 unit_direction = unit_vector(r.direction());
     double t = 0.5 * (unit_direction.y() + 1.0);
@@ -108,8 +114,16 @@ int main()
 
     // World Setup
     HittableList world;
-    world.add(make_shared<Sphere>(Point3(0, 0, -1), 0.5));
-    world.add(make_shared<Sphere>(Point3(0, -100.5, -1), 100));
+
+    shared_ptr<Lambertian> groundMaterial = make_shared<Lambertian>(Color(0.4, 0.8, 0.8));
+    shared_ptr<Lambertian> lambertianMaterial = make_shared<Lambertian>(Color(0.2, 0, 0.5));
+    shared_ptr<Metal> metalMaterial = make_shared<Metal>(Color(0.8, 0.8, 0.8));
+
+    world.add(make_shared<Sphere>(Point3(1.5, 0, -2), 0.5, metalMaterial));
+    world.add(make_shared<Sphere>(Point3(0, 0, -2), 0.5, lambertianMaterial));
+    world.add(make_shared<Sphere>(Point3(-1.5, 0, -2), 0.5, metalMaterial));
+
+    world.add(make_shared<Sphere>(Point3(0, -100.5, -1), 100, groundMaterial));
 
     vector<Color> pixels = generate_image(aspect_ratio, width, height, world, samples_per_pixel, max_depth);
     save_file(pixels, width, height, samples_per_pixel);
