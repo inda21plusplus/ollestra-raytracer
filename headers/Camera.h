@@ -18,7 +18,7 @@ public:
         double aspect_ratio = ar;
         double vp_height = 2.0;
         double vp_width = vp_height * aspect_ratio;
-        double focal_length = 1.0;
+        double focal_length = 1;
 
         origin = Point3(0, 0, 0);
         horizontal = Vec3(vp_width, 0, 0);

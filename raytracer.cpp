@@ -117,11 +117,12 @@ int main()
 
     shared_ptr<Lambertian> groundMaterial = make_shared<Lambertian>(Color(0.4, 0.8, 0.8));
     shared_ptr<Lambertian> lambertianMaterial = make_shared<Lambertian>(Color(0.2, 0, 0.5));
-    shared_ptr<Metal> metalMaterial = make_shared<Metal>(Color(0.8, 0.8, 0.8));
+    shared_ptr<Metal> metalMaterial = make_shared<Metal>(Color(1, 0.3, 0.3), 0.4);
+    shared_ptr<Dielectric> glass = make_shared<Dielectric>(1.3);
 
     world.add(make_shared<Sphere>(Point3(1.5, 0, -2), 0.5, metalMaterial));
     world.add(make_shared<Sphere>(Point3(0, 0, -2), 0.5, lambertianMaterial));
-    world.add(make_shared<Sphere>(Point3(-1.5, 0, -2), 0.5, metalMaterial));
+    world.add(make_shared<Sphere>(Point3(-1.5, 0, -2), 0.5, glass));
 
     world.add(make_shared<Sphere>(Point3(0, -100.5, -1), 100, groundMaterial));
 
