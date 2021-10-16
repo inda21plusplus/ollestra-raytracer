@@ -3,21 +3,28 @@
 #include "Commons.h"
 #include "Ray.h"
 #include "Hittable.h"
+#include "Texture.h"
 
 class Material
 {
 public:
     virtual bool scatter(
         const Ray &ray_in, const HitRecord &rec, Color &attenuation, Ray &scattered) const = 0;
+
+    virtual Color emitted(double u, double v, const Point3 &p) const
+    {
+        return Color(0.01, 0.01, 0.01);
+    }
 };
 
 class Lambertian : public Material
 {
 private:
-    Color albedo;
+    shared_ptr<Texture> albedo;
 
 public:
-    Lambertian(const Color &a) : albedo(a) {}
+    Lambertian(const Color &a) : albedo(make_shared<SolidColor>(a)) {}
+    Lambertian(shared_ptr<Texture> a) : albedo(a) {}
 
     virtual bool scatter(const Ray &ray_in, const HitRecord &rec, Color &attenuation, Ray &scattered) const override
     {
@@ -27,7 +34,7 @@ public:
             scatter_direction = rec.normal;
 
         scattered = Ray(rec.p, scatter_direction);
-        attenuation = albedo;
+        attenuation = albedo->value(rec.u, rec.v, rec.p);
         return true;
     }
 };
@@ -86,5 +93,26 @@ private:
         auto r_0 = (1 - ref_idx) / (1 + ref_idx);
         r_0 = r_0 * r_0;
         return r_0 + (1 - r_0) * pow((1 - cos), 5);
+    }
+};
+
+class DiffuseLight : public Material
+{
+private:
+    shared_ptr<Texture> emit;
+
+public:
+    DiffuseLight(shared_ptr<Texture> a) : emit(a) {}
+    DiffuseLight(Color c) : emit(make_shared<SolidColor>(c)) {}
+
+    virtual bool scatter(
+        const Ray &ray_in, const HitRecord &rec, Color &attenuation, Ray &scattered) const override
+    {
+        return false;
+    }
+
+    virtual Color emitted(double u, double v, const Point3 &p) const override
+    {
+        return emit->value(u, v, p);
     }
 };

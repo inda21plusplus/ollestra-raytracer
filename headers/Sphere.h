@@ -16,6 +16,17 @@ public:
     Sphere(Point3 c, double r, shared_ptr<Material> mat) : center(c), radius(r), material(mat){};
 
     virtual bool hit(const Ray &ray, double t_min, double t_max, HitRecord &rec) const override;
+    virtual bool boundingBox(double time0, double time1, AABB &OutBox) const override;
+
+private:
+    static void getSphereUV(const Point3 &p, double &u, double &v)
+    {
+        auto theta = acos(-p.y());
+        auto phi = atan2(-p.z(), p.x()) + pi;
+
+        u = phi / (2 * pi);
+        v = theta / pi;
+    }
 };
 
 bool Sphere::hit(const Ray &ray, double t_min, double t_max, HitRecord &rec) const
@@ -44,7 +55,15 @@ bool Sphere::hit(const Ray &ray, double t_min, double t_max, HitRecord &rec) con
     rec.p = ray.at(rec.t);
     Vec3 outward_normal = (rec.p - center) / radius;
     rec.set_face_normal(ray, outward_normal);
+    getSphereUV(outward_normal, rec.u, rec.v);
     rec.mat_ptr = material;
 
+    return true;
+}
+bool Sphere::boundingBox(double time0, double time1, AABB &OutBox) const
+{
+    OutBox = AABB(
+        center - Vec3(radius, radius, radius),
+        center + Vec3(radius, radius, radius));
     return true;
 }

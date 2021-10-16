@@ -13,11 +13,12 @@ private:
     Vec3 vertical;
 
 public:
-    Camera(double ar)
+    Camera(double vfov, double ar)
     {
-        double aspect_ratio = ar;
-        double vp_height = 2.0;
-        double vp_width = vp_height * aspect_ratio;
+        auto theta = degrees_to_radians(vfov);
+        auto h = tan(theta / 2);
+        auto vp_height = 2.0 * h;
+        auto vp_width = ar * vp_height;
         double focal_length = 1;
 
         origin = Point3(0, 0, 0);
